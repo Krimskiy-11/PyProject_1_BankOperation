@@ -2,46 +2,16 @@ import json
 import os
 from datetime import datetime
 
-import pandas as pd
 import requests
 from dotenv import load_dotenv
+
+from src.utils import read_excel
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
 
 HIGH_PATH = os.path.dirname(os.path.dirname(__file__))
 PATH_data = os.path.join(HIGH_PATH, "data")
-
-
-def hello() -> str:
-    """Функция-приветствия пользователя, ориентируется на нынешнее время"""
-
-    date_now = int(datetime.now().time().strftime("%H"))
-    morning = range(6, 12)
-    day = range(12, 19)
-    evening = range(19, 24)
-    night = range(0, 6)
-    if date_now in morning:
-        say_hello = "Доброе утро"
-    elif date_now in day:
-        say_hello = "Добрый день"
-    elif date_now in evening:
-        say_hello = "Добрый вечер"
-    elif date_now in night:
-        say_hello = "Доброй ночи"
-    return say_hello
-
-
-def read_excel(path):
-    """Функция, читающая excel-файл с операциями"""
-
-    PATH_file = os.path.join(PATH_data, path)
-    operations_df = pd.read_excel(PATH_file)
-    operations_df["Дата операции"] = pd.to_datetime(
-        operations_df["Дата операции"], dayfirst=True
-    )
-    return operations_df
-
 
 def filter_operations_by_date(date: str):
     """Функция, фильтрующая таблицу по дате"""
@@ -114,24 +84,3 @@ def stocks_price(path):
                 ex = {"stock": {stock}, "price": {data}}
                 result.append(ex)
     return result
-
-
-def main(date):
-    """Функция, возвращающая всю необходимую информацию по операциям"""
-    greeting = hello()
-    filter_df = filter_operations_by_date(date)
-    cards_info = get_cards_info(filter_df)
-    top = top_five_operations(filter_df)
-    currency = currency_price("user_settings.json")
-    stocks = stocks_price("user_settings.json")
-    result = {
-        "greeting": greeting,
-        "cards": cards_info,
-        "top_transactions": top,
-        "currency_rates": currency,
-        "stock_prices": stocks,
-    }
-    return json.dumps(result, ensure_ascii=False, indent=4)
-
-
-# print(main("2021-12-12 12:12:12"))

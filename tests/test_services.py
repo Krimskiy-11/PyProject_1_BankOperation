@@ -1,45 +1,35 @@
-from unittest.mock import patch
 import pandas as pd
 import json
+import pytest
 from src.services import search_words_in_description
 
 
-@patch("src.views.pd.read_excel")
-def test_search_words_in_description(mock_read_excel):
+@pytest.mark.parametrize(
+    "search_word, expected_count",
+    [
+        ("OZON", 2),
+        ("магазин", 1),
+        ("супермаркеты", 1),
+        ("amazon", 0),
+    ],
+)
+def test_search_words(search_word, expected_count):
 
-    fake_df = pd.DataFrame(
-        [
-            {
-                "Дата платежа": "04.10.2020",
-                "Номер карты": "*7197",
-                "Статус": "OK",
-                "Сумма операции": -750.0,
-                "Описание": "Покупка в магазине Магнит",
-                "Категория": "Супермаркеты",
-            },
-            {
-                "Дата платежа": "05.10.2020",
-                "Номер карты": "*7197",
-                "Статус": "OK",
-                "Сумма операции": -250.0,
-                "Описание": "Оплата такси",
-                "Категория": "Транспорт",
-            },
-            {
-                "Дата платежа": "07.10.2020",
-                "Номер карты": "*7197",
-                "Статус": "OK",
-                "Сумма операции": -850.0,
-                "Описание": "Покупка в магазине Пятерочка",
-                "Категория": "Супермаркеты",
-            },
-        ]
-    )
+    df = pd.DataFrame({
+        "Описание": [
+            "Покупка OZON",
+            "Оплата в магазине",
+            "OZON доставка"
+        ],
+        "Категория": [
+            "Маркетплейсы",
+            "Супермаркеты",
+            "Онлайн покупки"
+        ],
+        "Сумма платежа": [1000, 500, 2000]
+    })
 
-    mock_read_excel.return_value = fake_df
+    result = search_words_in_description(search_word, df)
+    result_dict = json.loads(result)
 
-    result_json = search_words_in_description("магазин", "fake_operations.xlsx")
-    result = json.loads(result_json)
-
-    assert result[0]["Описание"] == "Покупка в магазине Магнит"
-    assert result[1]["Описание"] == "Покупка в магазине Пятерочка"
+    assert len(result_dict) == expected_count

@@ -19,7 +19,7 @@ def report_decorator(filename: Optional[str] = None):
         @wraps(func)
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
-            result_dict = result.to_dict(orient="records")
+            # result_dict = result.to_dict(orient="records")
 
             if filename:
                 filename_1 = filename
@@ -29,7 +29,7 @@ def report_decorator(filename: Optional[str] = None):
                 )
 
             with open(filename_1, "w") as f:
-                json.dump(result_dict, f, indent=4, ensure_ascii=False)
+                json.dump(result, f, indent=4, ensure_ascii=False)
 
             return result
 
@@ -40,8 +40,7 @@ def report_decorator(filename: Optional[str] = None):
 
 @report_decorator()
 def spending_by_category(
-    transactions: pd.DataFrame, category: str, date: Optional[str] = None
-) -> pd.DataFrame:
+    transactions: pd.DataFrame, category: str, date: Optional[str] = None):
     """Возвращает траты по заданной категории за последние три месяца."""
 
     operations = transactions[
@@ -49,7 +48,7 @@ def spending_by_category(
     ]
     filter_by_category = operations[operations["Категория"] == category]
     filter_by_category["Дата операции"] = pd.to_datetime(
-        operations_df["Дата операции"], dayfirst=True
+        filter_by_category["Дата операции"], dayfirst=True
     )
 
     if date:
@@ -64,9 +63,8 @@ def spending_by_category(
         & (filter_by_category["Дата операции"] < date_end)
     ]
 
-    return df_filter_operations[["Дата платежа", "Категория", "Сумма платежа"]]
+    result = df_filter_operations[["Дата платежа", "Категория", "Сумма платежа"]].to_dict(orient='records')
+    return json.dumps(result, indent=4, ensure_ascii=False)
 
 
-# print(json.dumps(spending_by_category(operations_df, "Супермаркеты", "02.07.2020").to_dict(orient='records'),
-#                  indent=4,
-#                  ensure_ascii=False))
+print(spending_by_category(operations_df, "Супермаркеты", "02.07.2020"))

@@ -1,9 +1,6 @@
-import pytest
 import json
 
 from src.views import (
-    hello,
-    read_excel,
     filter_operations_by_date,
     get_cards_info,
     top_five_operations,
@@ -13,21 +10,6 @@ from src.views import (
 
 import pandas as pd
 from unittest.mock import patch, mock_open
-from datetime import datetime
-
-
-@patch("src.views.datetime")
-def test_hello_morning(mock_date):
-    fake_datetime = datetime(2024, 1, 1, 8, 0, 0)
-    mock_date.now.return_value = fake_datetime
-    result = hello()
-
-    assert result == "Доброе утро"
-
-
-def test_read_excel():
-    result = read_excel("operations.xlsx")
-    assert isinstance(result["Дата операции"].iloc[0], pd.Timestamp)
 
 
 @patch("src.views.read_excel")
